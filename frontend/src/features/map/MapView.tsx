@@ -8,6 +8,7 @@ import { mapBottomInset } from '../../lib/layoutMetrics';
 import { decodePolyline } from '../../lib/polyline';
 import { routeDrawIn } from '../../animations/timelines';
 import { prefersReducedMotion } from '../../animations/useReducedMotion';
+import { useTheme } from '../../lib/theme';
 import { useUIStore } from '../../store/ui';
 import { CheckpointPopup } from '../checkpoint/CheckpointPopup';
 import { findCheckpoint } from '../checkpoint/CheckpointDrawer';
@@ -33,7 +34,7 @@ const DESKTOP_MIN_WIDTH = 900;
 const FIT_DURATION_MS = 900;
 
 function cameraPadding() {
-  if (window.innerWidth >= DESKTOP_MIN_WIDTH) return { top: 60, bottom: 110, left: 420, right: 60 };
+  if (window.innerWidth >= DESKTOP_MIN_WIDTH) return { top: 60, bottom: 130, left: 448, right: 60 };
   return {
     top: 50,
     bottom: (mapBottomInset() || Math.round(window.innerHeight * 0.5)) + 16,
@@ -59,7 +60,8 @@ export interface MapViewProps {
 
 export default function MapView({ plan, heatmap, bus, startMs }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const map = useMapInstance(containerRef);
+  const theme = useTheme((s) => s.resolved);
+  const map = useMapInstance(containerRef, theme);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const [popupNode, setPopupNode] = useState<HTMLDivElement | null>(null);
   const selectedCheckpoint = useUIStore((s) => s.selectedCheckpoint);

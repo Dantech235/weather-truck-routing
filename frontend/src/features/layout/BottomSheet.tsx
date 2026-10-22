@@ -134,7 +134,7 @@ export function BottomSheet({ children, above, label }: Props) {
   return (
     <div
       ref={sheetRef}
-      className="fixed inset-x-0 bottom-0 z-20 flex flex-col rounded-t-2xl border-t border-slate-200 bg-slate-50/95 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"
+      className="fixed inset-x-0 bottom-0 z-20 flex flex-col rounded-t-[24px] border-t border-white/60 bg-white/95 shadow-[0_-8px_32px_-8px_rgba(15,23,42,0.2)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/95"
       style={{ height: `${SHEET_VH * 100}dvh` }}
       data-testid="bottom-sheet"
       data-snap={snap}
@@ -160,7 +160,13 @@ export function BottomSheet({ children, above, label }: Props) {
           <span className="h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-600" aria-hidden />
         </button>
       </div>
-      <section aria-label={label} className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
+      <section
+        aria-label={label}
+        className="scroll-thin min-h-0 flex-1 overflow-y-auto px-4"
+        // The part of the sheet below the screen edge is padding, so the end of the content can
+        // always be scrolled into view at every snap point.
+        style={{ paddingBottom: offsetFor(snap) + 24 }}
+      >
         {children}
       </section>
     </div>

@@ -19,7 +19,7 @@ const fmt = (v: number | null | undefined, digits: number, unit: string) =>
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4 py-1.5">
-      <dt className="text-slate-500">{label}</dt>
+      <dt className="text-slate-500 dark:text-slate-400">{label}</dt>
       <dd className="text-right font-medium tabular-nums">{children}</dd>
     </div>
   );
@@ -90,7 +90,7 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
       aria-modal="false"
       aria-labelledby="cp-title"
       data-testid="checkpoint-drawer"
-      className="checkpoint-drawer absolute inset-y-0 right-0 z-30 w-full max-w-sm overflow-y-auto border-l border-slate-200 bg-white p-5 shadow-lg dark:border-slate-800 dark:bg-slate-950"
+      className="checkpoint-drawer surface scroll-thin absolute bottom-0 right-0 top-0 z-30 w-full max-w-sm overflow-y-auto p-5 sm:bottom-3 sm:right-3 sm:top-3 sm:rounded-[20px]"
     >
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -103,7 +103,7 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
           ref={closeRef}
           type="button"
           onClick={() => close(null)}
-          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 focus-visible:outline-accent dark:hover:bg-slate-800"
+          className="rounded-full p-1.5 text-slate-500 transition hover:bg-slate-900/5 focus-visible:outline-accent dark:hover:bg-white/10"
           aria-label="Close checkpoint details"
         >
           ✕
@@ -121,16 +121,16 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
         </div>
 
         {r.load_rule_applied && (
-          <p className="mt-3 rounded-card border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="mt-3 rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-sm dark:border-accent-soft/30 dark:bg-accent-soft/10">
             <span className="block text-xs font-medium text-slate-500">Load rule applied</span>
             {r.load_rule_applied}
           </p>
         )}
 
-        <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Arrival
         </h3>
-        <dl className="text-sm">
+        <dl className="mt-1 divide-y divide-slate-900/5 text-sm dark:divide-white/5">
           <Row label="ETA">{formatLocalDateTime(cp.eta_utc)}</Row>
           <Row label="Elapsed">{formatDuration(cp.elapsed_s)}</Row>
           <Row label="ETA method">
@@ -138,10 +138,10 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
           </Row>
         </dl>
 
-        <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Weather at ETA
         </h3>
-        <dl className="text-sm">
+        <dl className="mt-1 divide-y divide-slate-900/5 text-sm dark:divide-white/5">
           <Row label="Wind (sustained)">{fmt(w.wind_mph, 1, 'mph')}</Row>
           <Row label="Gusts (shown, not scored)">{fmt(w.gust_mph, 1, 'mph')}</Row>
           <Row label="Rain">{fmt(w.rain_in_hr, 2, 'in/hr')}</Row>
@@ -151,10 +151,10 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
           </Row>
         </dl>
 
-        <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Component levels
         </h3>
-        <dl className="text-sm">
+        <dl className="mt-1 divide-y divide-slate-900/5 text-sm dark:divide-white/5">
           {(['wind', 'rain', 'snow'] as const).map((k) => (
             <Row key={k} label={COMPONENT_LABELS[k]}>
               {r[k] ? <LevelChip level={r[k]} /> : '—'}

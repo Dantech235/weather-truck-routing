@@ -25,7 +25,7 @@ export function RiskBar({ metrics }: { metrics: Metrics }) {
   return (
     <div>
       <div
-        className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+        className="flex h-2 w-full gap-px overflow-hidden rounded-full bg-slate-200 dark:bg-white/10"
         role="img"
         aria-label={`Miles by risk level: ${summary}`}
       >

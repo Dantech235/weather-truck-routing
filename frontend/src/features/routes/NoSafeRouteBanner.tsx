@@ -6,17 +6,17 @@ type Tone = 'danger' | 'warning' | 'info';
 
 const TONES: Record<Tone, string> = {
   danger:
-    'border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200',
+    'border-red-200 bg-red-50 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200',
   warning:
-    'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200',
-  info: 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200',
+    'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200',
+  info: 'border-indigo-200 bg-indigo-50 text-indigo-900 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200',
 };
 
 export function Banner({ tone, children }: { tone: Tone; children: ReactNode }) {
   return (
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
-      className={clsx('rounded-card border px-3 py-2 text-sm', TONES[tone])}
+      className={clsx('rounded-xl border px-3 py-2.5 text-sm', TONES[tone])}
     >
       {children}
     </div>

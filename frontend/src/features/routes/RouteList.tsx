@@ -50,7 +50,7 @@ export function RouteList({ plan }: { plan: Plan }) {
 
   return (
     <section ref={scope} aria-label="Route options" className="space-y-3">
-      <p className="text-sm text-slate-700 dark:text-slate-300">
+      <p className="rounded-xl bg-gradient-to-br from-accent/10 to-sky-500/10 px-3.5 py-3 text-sm leading-relaxed text-slate-700 dark:from-accent-soft/15 dark:to-sky-400/10 dark:text-slate-200">
         {plan.recommended ? (
           <>
             <strong className="font-semibold">Route {plan.recommended} recommended.</strong>{' '}

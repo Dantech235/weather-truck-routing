@@ -77,7 +77,7 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
   const formError = error && !formFieldFor(error.field) ? error : null;
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-3" aria-label="Trip details">
+    <form onSubmit={submit} noValidate className="space-y-4" aria-label="Trip details">
       <Controller
         control={control}
         name="origin"
@@ -108,10 +108,7 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
       />
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label
-            htmlFor="departure"
-            className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300"
-          >
+          <label htmlFor="departure" className="label">
             Departure (local)
           </label>
           <input
@@ -130,10 +127,7 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
           )}
         </div>
         <div>
-          <label
-            htmlFor="load"
-            className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300"
-          >
+          <label htmlFor="load" className="label">
             Load (lb)
           </label>
           <input
@@ -157,9 +151,7 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
         </div>
       </div>
       <fieldset>
-        <legend className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-          Checkpoint every
-        </legend>
+        <legend className="label">Checkpoint every</legend>
         <Controller
           control={control}
           name="interval"
@@ -167,16 +159,16 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
             <div
               role="radiogroup"
               aria-label="Checkpoint interval"
-              className="grid grid-cols-3 rounded-card border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800"
+              className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-100/80 p-1 dark:border-white/10 dark:bg-white/5"
             >
               {INTERVALS.map((mi) => (
                 <label
                   key={mi}
                   className={clsx(
-                    'cursor-pointer rounded-lg py-1.5 text-center text-sm font-medium focus-within:ring-2 focus-within:ring-accent',
+                    'cursor-pointer rounded-lg py-1.5 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-accent',
                     field.value === mi
-                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white'
-                      : 'text-slate-600 dark:text-slate-300',
+                      ? 'bg-white text-accent shadow-sm dark:bg-white/15 dark:text-white'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white',
                   )}
                 >
                   <input
@@ -197,7 +189,7 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
       {formError && (
         <p
           role="alert"
-          className="rounded-card border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
         >
           {formError.message}
         </p>

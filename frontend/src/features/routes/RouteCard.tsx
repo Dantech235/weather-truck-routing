@@ -33,21 +33,23 @@ export function RouteCard({ route, recommended }: Props) {
       onFocus={() => hoverRoute(route.label)}
       onBlur={() => hoverRoute(null)}
       className={clsx(
-        'route-card w-full rounded-card border bg-white p-4 text-left transition-colors dark:bg-slate-900',
+        'route-card w-full rounded-card border p-4 text-left shadow-card transition-[border-color,box-shadow,background-color] duration-200',
         selected
-          ? 'border-accent ring-1 ring-accent'
-          : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700',
+          ? 'border-accent/60 bg-white ring-2 ring-accent/25 dark:border-accent-soft/60 dark:bg-white/[0.07] dark:ring-accent-soft/25'
+          : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-float dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/20',
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-sm font-bold text-white dark:bg-slate-100 dark:text-slate-900">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold text-white dark:bg-white dark:text-slate-900">
             {route.label}
           </span>
-          <span className="text-xs font-medium text-slate-500">Rank {route.rank}</span>
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Rank {route.rank}
+          </span>
           {recommended && (
             <span
-              className="recommended-badge relative inline-block rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-white"
+              className="recommended-badge relative inline-block rounded-full bg-gradient-to-r from-accent to-blue-600 px-2.5 py-0.5 text-xs font-semibold text-white shadow-glow"
               data-testid="recommended-badge"
             >
               <span
@@ -63,20 +65,28 @@ export function RouteCard({ route, recommended }: Props) {
 
       <dl className="mt-3 grid grid-cols-3 gap-2 text-sm tabular-nums">
         <div>
-          <dt className="text-xs text-slate-500">Distance</dt>
-          <dd className="font-semibold">
+          <dt className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Distance
+          </dt>
+          <dd className="text-[15px] font-semibold tracking-tight">
             <CountUp value={route.distance_mi} format={(n) => formatMiles(n)} />
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Duration</dt>
-          <dd className="font-semibold">
+          <dt className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Duration
+          </dt>
+          <dd className="text-[15px] font-semibold tracking-tight">
             <CountUp value={route.travel_time_s} format={formatDuration} />
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Arrives</dt>
-          <dd className="font-semibold">{formatLocalTime(route.arrival_utc)}</dd>
+          <dt className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Arrives
+          </dt>
+          <dd className="text-[15px] font-semibold tracking-tight">
+            {formatLocalTime(route.arrival_utc)}
+          </dd>
         </div>
       </dl>
 

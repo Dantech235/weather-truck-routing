@@ -52,10 +52,7 @@ export function PlaceAutocomplete({ label, value, onChange, error, placeholder, 
 
   return (
     <div className="relative">
-      <label
-        htmlFor={id}
-        className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300"
-      >
+      <label htmlFor={id} className="label">
         {label}
       </label>
       <input
@@ -105,7 +102,7 @@ export function PlaceAutocomplete({ label, value, onChange, error, placeholder, 
           id={listId}
           role="listbox"
           aria-label={`${label} suggestions`}
-          className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-card border border-slate-200 bg-white py-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
+          className="scroll-thin absolute z-30 mt-1.5 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 bg-white p-1 text-sm shadow-float dark:border-white/10 dark:bg-slate-900"
         >
           {options.map((place, i) => (
             <li
@@ -114,10 +111,10 @@ export function PlaceAutocomplete({ label, value, onChange, error, placeholder, 
               role="option"
               aria-selected={i === active}
               className={clsx(
-                'cursor-pointer px-3 py-2',
+                'cursor-pointer rounded-lg px-3 py-2',
                 i === active
-                  ? 'bg-accent/10 text-accent'
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800',
+                  ? 'bg-accent/10 text-accent dark:bg-accent-soft/20 dark:text-white'
+                  : 'hover:bg-slate-100 dark:hover:bg-white/5',
               )}
               onMouseDown={(e) => {
                 e.preventDefault();

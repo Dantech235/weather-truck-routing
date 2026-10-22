@@ -124,7 +124,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
 
   return (
     <div
-      className="forecast-dock pointer-events-auto rounded-card border border-slate-200 bg-white/95 px-3 pb-2 pt-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95"
+      className="forecast-dock surface pointer-events-auto rounded-[20px] px-4 pb-2.5 pt-3"
       role="group"
       aria-label="Forecast timeline"
     >
@@ -132,7 +132,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
         <button
           type="button"
           onClick={toggle}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-blue-600 text-white shadow-glow transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label={playing ? 'Pause forecast playback' : 'Play forecast'}
           aria-pressed={playing}
           data-testid="play-button"
@@ -147,7 +147,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
               data-testid="slider-clock"
               aria-live="off"
             />
-            <span className="hidden truncate text-slate-500 sm:inline">
+            <span className="hidden truncate text-slate-500 dark:text-slate-400 sm:inline">
               {status ?? 'Weather risk, next 48 h'}
             </span>
           </div>
@@ -159,17 +159,17 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
-            <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+            <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
               <div
                 ref={fillRef}
-                className="h-full w-full origin-left bg-accent"
+                className="h-full w-full origin-left bg-gradient-to-r from-accent to-sky-500"
                 style={{ transform: 'scaleX(0)' }}
               />
             </div>
             {arrivals.map((a) => (
               <div
                 key={a.label}
-                className="absolute top-0 h-6 w-0.5 -translate-x-1/2 bg-slate-900 dark:bg-slate-100"
+                className="absolute top-0 h-6 w-0.5 -translate-x-1/2 rounded-full bg-slate-900/70 dark:bg-white/70"
                 style={{ left: `${(clampHour(a.hour) / MAX_HOUR) * 100}%` }}
                 title={`Route ${a.label} arrives`}
                 aria-hidden
@@ -189,7 +189,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
               aria-valuenow={0}
               onKeyDown={onKeyDown}
               data-testid="forecast-slider"
-              className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-accent shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-accent shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-slate-900"
               style={{ left: '0%' }}
             />
           </div>

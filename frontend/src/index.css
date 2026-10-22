@@ -3,8 +3,12 @@
 @tailwind utilities;
 
 :root {
-  font-feature-settings: 'tnum';
-  color-scheme: light dark;
+  font-feature-settings: 'tnum', 'cv11';
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
 }
 
 html,
@@ -14,31 +18,69 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-slate-100 text-slate-900 antialiased dark:bg-[#0b0f1a] dark:text-slate-100;
 }
 
 @layer components {
+  /* Floating glass surface used by the planner panel, slider dock, legend and drawer. */
+  .surface {
+    @apply border border-white/60 bg-white/80 shadow-float backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/75;
+  }
+  .label {
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+  }
   .field {
-    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100;
+    @apply block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:border-white/20 dark:focus:border-accent-soft;
   }
   .field-error {
-    @apply border-red-500 focus:border-red-500 focus:ring-red-500/30;
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/15;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-80;
+    @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-accent to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-glow transition hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-80;
   }
   .btn-secondary {
-    @apply inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10;
   }
 }
 
 :focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #4f46e5;
   outline-offset: 2px;
 }
 
+/* Thin, unobtrusive scrollbars inside panels. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
 .maplibregl-popup-content {
-  @apply rounded-card px-3 py-2 shadow-md;
+  @apply rounded-xl px-3 py-2 shadow-float;
+}
+
+.dark .maplibregl-popup-content {
+  @apply bg-slate-900 text-slate-100;
+}
+
+.dark .maplibregl-popup-tip {
+  border-top-color: #0f172a !important;
+  border-bottom-color: #0f172a !important;
+}
+
+.maplibregl-ctrl-group {
+  @apply overflow-hidden !rounded-xl !shadow-float;
+}
+
+.dark .maplibregl-ctrl-group {
+  @apply !bg-slate-900;
+}
+
+.dark .maplibregl-ctrl-group button + button {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .maplibregl-ctrl-icon {
+  filter: invert(1);
 }
 
 /* Loading: a thin top progress bar and a skeleton shimmer (transform-only animations). */
@@ -74,10 +116,8 @@ body {
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  .skeleton::after {
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-  }
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
