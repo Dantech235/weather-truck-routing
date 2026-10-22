@@ -81,6 +81,12 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
+# Accept browser requests from any origin (the API has no cookies or auth, so this exposes no
+# user data). Also enabled by CORS_ALLOWED_ORIGINS="*". Prefer an explicit list once the web
+# app's URL is final.
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", False) or CORS_ALLOWED_ORIGINS == ["*"]
+if CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOWED_ORIGINS = []
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
