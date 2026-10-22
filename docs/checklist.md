@@ -4,10 +4,10 @@ Legend: ✅ done and verified · 🟡 done, with a check that needs your environ
 
 ## Logic (40%)
 
-- 🟡 **3 distinct routes for typical US city pairs; fewer only when they truly don't exist, with a
-  notice.** Implemented and tested with the alternatives algorithm (dedupe + 4 via-point
-  retries, never invents a route) and the "fewer than 3" banner. Still to verify against live
-  TomTom: `docs/deploy-vercel.md` step 5, or `python manage.py smoke_plan`.
+- ✅ **3 distinct routes for typical US city pairs; fewer only when they truly don't exist, with a
+  notice.** Verified live on 2026-10-22 (Dallas → Denver, 45,000 lb, 25 mi): 3 TomTom truck
+  routes. A is recommended; B, the shortest at 797.5 mi, ranks last on 50.0 Severe miles; cold
+  plan ≈ 11.7 s.
 - ✅ **Checkpoints at exactly 10 / 25 / 50 mi plus origin and destination** (merge < 2 mi;
   property-tested).
 - ✅ **Weather selected at each checkpoint's ETA with Open-Meteo hour semantics**; "forecast hour
@@ -42,8 +42,8 @@ Legend: ✅ done and verified · 🟡 done, with a check that needs your environ
 
 - ✅ **README per §10.**
 - ⬜ **Loom recorded per §11**: the script is in `docs/loom-script.md`.
-- ⬜ **Hosted URLs live**: deploy with `docs/deploy-vercel.md`, then put both URLs at the top
-  of the README.
+- ✅ **Hosted URLs live**: web https://truck-web-phi.vercel.app · API
+  https://truck-api-topaz.vercel.app (Vercel, Neon Postgres, migrations applied in the build).
 
 ## Deviations from the brief (documented)
 

@@ -7,9 +7,14 @@ is recommended (fewest Severe miles → fewest High miles → lowest average ris
 and every route, checkpoint and risk level is shown on a map with a **0–48 h weather heatmap**
 and moving truck markers. Every plan has a shareable URL.
 
-- **Web app:** `https://truck-web.vercel.app` _(set after deploying; see [Deploy](#deploy-to-vercel))_
-- **API docs:** `https://truck-api.vercel.app/api/docs/`
+- **Web app:** https://truck-web-phi.vercel.app
+- **API:** https://truck-api-topaz.vercel.app ([docs](https://truck-api-topaz.vercel.app/api/docs/), [health](https://truck-api-topaz.vercel.app/api/health/))
 - **Walkthrough (Loom):** _to record; script in [`docs/loom-script.md`](docs/loom-script.md)_
+
+Live Dallas → Denver check (45,000 lb, 25 mi, TomTom + Open-Meteo, 2026-10-22): 3 distinct
+truck routes. A (12h01) is recommended with no Severe or High miles. B is the shortest at
+797.5 mi but has 50.0 Severe miles and ranks last. Cold plan time was ≈ 11.7 s (routing 6.0 s,
+weather 5.6 s).
 
 | Desktop: heatmap at +5 h, truck B inside the storm | Phone: bottom sheet + slider |
 | --- | --- |
