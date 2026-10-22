@@ -1,0 +1,108 @@
+[
+ {
+  "latitude": 32.78,
+  "longitude": -96.8,
+  "generationtime_ms": 0.1,
+  "utc_offset_seconds": 0,
+  "timezone": "GMT",
+  "hourly_units": {
+   "time": "unixtime",
+   "wind_speed_10m": "mp/h",
+   "wind_gusts_10m": "mp/h",
+   "rain": "inch",
+   "showers": "inch",
+   "snowfall": "inch"
+  },
+  "hourly": {
+   "time": [
+    1792674000,
+    1792677600,
+    1792681200,
+    1792684800
+   ],
+   "wind_speed_10m": [
+    10,
+    20,
+    30,
+    40
+   ],
+   "wind_gusts_10m": [
+    20,
+    30,
+    40,
+    50
+   ],
+   "rain": [
+    0.0,
+    0.05,
+    0.2,
+    0.4
+   ],
+   "showers": [
+    0.0,
+    0.05,
+    0.1,
+    0.2
+   ],
+   "snowfall": [
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ {
+  "latitude": 39.74,
+  "longitude": -104.99,
+  "generationtime_ms": 0.1,
+  "utc_offset_seconds": 0,
+  "timezone": "GMT",
+  "hourly_units": {
+   "time": "unixtime",
+   "wind_speed_10m": "mp/h",
+   "wind_gusts_10m": "mp/h",
+   "rain": "inch",
+   "showers": "inch",
+   "snowfall": "inch"
+  },
+  "hourly": {
+   "time": [
+    1792674000,
+    1792677600,
+    1792681200,
+    1792684800
+   ],
+   "wind_speed_10m": [
+    30,
+    36,
+    46,
+    56
+   ],
+   "wind_gusts_10m": [
+    40,
+    46,
+    56,
+    66
+   ],
+   "rain": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "showers": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "snowfall": [
+    0.0,
+    0.5,
+    2.0,
+    3.5
+   ]
+  }
+ }
+]

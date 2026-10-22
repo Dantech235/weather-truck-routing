@@ -112,3 +112,8 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "structured"}},
     "root": {"handlers": ["console"], "level": os.environ.get("LOG_LEVEL", "INFO")},
 }
+
+SPECTACULAR_SETTINGS["ENUM_NAME_OVERRIDES"] = {
+    "RiskLevelEnum": "trips.serializers.RISK_LEVEL_CHOICES",
+    "ComponentLevelEnum": "trips.serializers.COMPONENT_LEVEL_CHOICES",
+}

@@ -37,7 +37,7 @@ def checkpoint_marks(route_length_mi: float, interval_mi: float) -> list[float]:
     marks: list[float] = []
     k = 0
     while k * interval_mi < route_length_mi:
-        marks.append(k * interval_mi)
+        marks.append(float(k * interval_mi))
         k += 1
     if len(marks) > 1 and route_length_mi - marks[-1] < MERGE_THRESHOLD_MI:
         marks.pop()

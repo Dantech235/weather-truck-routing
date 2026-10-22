@@ -1,0 +1,40 @@
+{
+ "summary": {
+  "query": "dallas",
+  "numResults": 2
+ },
+ "results": [
+  {
+   "type": "Geography",
+   "address": {
+    "freeformAddress": "Dallas, TX",
+    "countryCode": "US"
+   },
+   "position": {
+    "lat": 32.77815,
+    "lon": -96.7954
+   }
+  },
+  {
+   "type": "POI",
+   "poi": {
+    "name": "Dallas Love Field"
+   },
+   "address": {
+    "freeformAddress": "8008 Herb Kelleher Way, Dallas, TX 75235"
+   },
+   "position": {
+    "lat": 32.8471,
+    "lon": -96.8518
+   }
+  },
+  {
+   "type": "Geography",
+   "address": {},
+   "position": {
+    "lat": 1,
+    "lon": 2
+   }
+  }
+ ]
+}

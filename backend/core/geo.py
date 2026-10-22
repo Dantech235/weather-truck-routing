@@ -70,3 +70,73 @@ def destination_point(origin: LatLon, bearing: float, distance_mi: float) -> Lat
         math.cos(delta) - math.sin(lat1) * math.sin(lat2),
     )
     return (math.degrees(lat2), (math.degrees(lon2) + 540) % 360 - 180)
+
+
+def sample_polyline(coords: Sequence[LatLon], step_mi: float) -> list[LatLon]:
+    """Points every `step_mi` along the polyline, including both ends."""
+    if not coords:
+        return []
+    cumulative = cumulative_distances(coords)
+    total = cumulative[-1]
+    if total == 0:
+        return [coords[0]]
+    n = max(1, math.ceil(total / step_mi))
+    return [point_at_distance(coords, cumulative, total * i / n) for i in range(n + 1)]
+
+
+class NearIndex:
+    """Grid index answering "is any indexed point within `radius_mi` of p?"."""
+
+    def __init__(self, points: Sequence[LatLon], radius_mi: float) -> None:
+        self.radius_mi = radius_mi
+        self._cell_lat = radius_mi / 69.0  # degrees of latitude per cell
+        self._cells: dict[tuple[int, int], list[LatLon]] = {}
+        for p in points:
+            self._cells.setdefault(self._key(p), []).append(p)
+
+    def _key(self, p: LatLon) -> tuple[int, int]:
+        # Longitude cells use a fixed latitude-independent size and the lookup widens the
+        # search by cos(lat), so cells never under-cover the radius.
+        return (math.floor(p[0] / self._cell_lat), math.floor(p[1] / self._cell_lat))
+
+    def near(self, p: LatLon) -> bool:
+        ky, kx = self._key(p)
+        cos_lat = max(0.05, math.cos(math.radians(p[0])))
+        span_x = math.ceil(1 / cos_lat)
+        for dy in (-1, 0, 1):
+            for dx in range(-span_x, span_x + 1):
+                for q in self._cells.get((ky + dy, kx + dx), ()):
+                    if haversine_mi(p, q) <= self.radius_mi:
+                        return True
+        return False
+
+
+def simplify(coords: Sequence[LatLon], tolerance_deg: float) -> list[LatLon]:
+    """Douglas–Peucker simplification in degree space (iterative; keeps both ends)."""
+    n = len(coords)
+    if n <= 2:
+        return list(coords)
+    keep = [False] * n
+    keep[0] = keep[-1] = True
+    stack = [(0, n - 1)]
+    tol2 = tolerance_deg * tolerance_deg
+    while stack:
+        i, j = stack.pop()
+        (ay, ax), (by, bx) = coords[i], coords[j]
+        dy, dx = by - ay, bx - ax
+        seg2 = dx * dx + dy * dy
+        worst, worst_d = -1, tol2
+        for k in range(i + 1, j):
+            py, px = coords[k]
+            if seg2 == 0:
+                d2 = (px - ax) ** 2 + (py - ay) ** 2
+            else:
+                t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / seg2))
+                d2 = (px - ax - t * dx) ** 2 + (py - ay - t * dy) ** 2
+            if d2 > worst_d:
+                worst, worst_d = k, d2
+        if worst >= 0:
+            keep[worst] = True
+            stack.append((i, worst))
+            stack.append((worst, j))
+    return [c for c, k in zip(coords, keep, strict=True) if k]
