@@ -4,6 +4,7 @@
 
 :root {
   font-feature-settings: 'tnum';
+  color-scheme: light dark;
 }
 
 html,
@@ -14,4 +15,59 @@ body,
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
+
+@layer components {
+  .field {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100;
+  }
+  .field-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/30;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-80;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200;
+  }
+
+  /* Desktop: 400 px left panel over the map. Under 900 px: bottom sheet over a full-screen map. */
+  .panel {
+    @apply inset-x-0 bottom-0 max-h-[55vh] rounded-t-2xl border-t;
+  }
+  @media (min-width: 900px) {
+    .panel {
+      @apply inset-y-0 left-0 right-auto max-h-none w-[400px] rounded-none border-r border-t-0;
+    }
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.maplibregl-popup-content {
+  @apply rounded-card px-3 py-2 shadow-md;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-bar {
+  animation: progress 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar,
+  .animate-pulse,
+  .animate-spin {
+    animation: none;
+  }
 }

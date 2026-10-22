@@ -1,0 +1,729 @@
+openapi: 3.0.3
+info:
+  title: Weather-Aware Truck Routing API
+  version: 1.0.0
+paths:
+  /api/health/:
+    get:
+      operationId: health
+      description: Liveness plus whether each routing provider is configured.
+      tags:
+        - health
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+  /api/v1/geocode/:
+    get:
+      operationId: geocode
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: At least 3 characters
+          required: true
+      tags:
+        - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaceResult'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Validation error
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Rate limited (see Retry-After)
+  /api/v1/plans/:
+    post:
+      operationId: plans_create
+      tags:
+        - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequestRequest'
+            examples:
+              DallasToDenver:
+                value:
+                  origin:
+                    label: Dallas, TX
+                    lat: 32.7767
+                    lon: -96.797
+                  destination:
+                    label: Denver, CO
+                    lat: 39.7392
+                    lon: -104.9903
+                  departure: '2026-10-22T13:00:00Z'
+                  load_lb: 45000
+                  interval_mi: 25
+                summary: Dallas to Denver
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ROUTE_NOT_FOUND
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ROUTING_UNAVAILABLE
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Validation error
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Rate limited (see Retry-After)
+  /api/v1/plans/{plan_id}/:
+    get:
+      operationId: plans_retrieve
+      parameters:
+        - in: path
+          name: plan_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      tags:
+        - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /api/v1/risk-rules/:
+    get:
+      operationId: risk_rules
+      tags:
+        - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskRules'
+          description: ''
+components:
+  schemas:
+    Band:
+      type: object
+      properties:
+        level:
+          $ref: '#/components/schemas/ComponentLevelEnum'
+        min:
+          type: number
+          format: double
+          description: Inclusive lower bound (strictly above for rain/snow No Travel).
+        max:
+          type: number
+          format: double
+          nullable: true
+        min_inclusive:
+          type: boolean
+        max_inclusive:
+          type: boolean
+      required:
+        - level
+        - max
+        - max_inclusive
+        - min
+        - min_inclusive
+    Checkpoint:
+      type: object
+      properties:
+        index:
+          type: integer
+        mile:
+          type: number
+          format: double
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        eta_utc:
+          type: string
+          format: date-time
+        elapsed_s:
+          type: integer
+        eta_method:
+          $ref: '#/components/schemas/EtaMethodEnum'
+        weather:
+          $ref: '#/components/schemas/Weather'
+        risk:
+          $ref: '#/components/schemas/Risk'
+      required:
+        - elapsed_s
+        - eta_method
+        - eta_utc
+        - index
+        - lat
+        - lon
+        - mile
+        - risk
+        - weather
+    ComponentLevelEnum:
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - SEVERE
+        - NO_TRAVEL
+      type: string
+      description: |-
+        * `LOW` - LOW
+        * `MODERATE` - MODERATE
+        * `HIGH` - HIGH
+        * `SEVERE` - SEVERE
+        * `NO_TRAVEL` - NO_TRAVEL
+    Error:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+      required:
+        - error
+    ErrorDetail:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        field:
+          type: string
+          nullable: true
+      required:
+        - code
+        - field
+        - message
+    EtaMethodEnum:
+      enum:
+        - guidance
+        - proportional
+      type: string
+      description: |-
+        * `guidance` - guidance
+        * `proportional` - proportional
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        providers:
+          $ref: '#/components/schemas/ProviderHealth'
+      required:
+        - providers
+        - status
+    IntervalMiEnum:
+      enum:
+        - 10
+        - 25
+        - 50
+      type: integer
+      description: |-
+        * `10` - 10
+        * `25` - 25
+        * `50` - 50
+    LoadRule:
+      type: object
+      properties:
+        wind_min_mph:
+          type: number
+          format: double
+        wind_max_mph:
+          type: number
+          format: double
+          nullable: true
+        load_over_lb:
+          type: integer
+        result:
+          $ref: '#/components/schemas/ComponentLevelEnum'
+        text:
+          type: string
+      required:
+        - load_over_lb
+        - result
+        - text
+        - wind_max_mph
+        - wind_min_mph
+    Metrics:
+      type: object
+      properties:
+        no_travel_miles:
+          type: number
+          format: double
+        severe_miles:
+          type: number
+          format: double
+        high_miles:
+          type: number
+          format: double
+        moderate_miles:
+          type: number
+          format: double
+        low_miles:
+          type: number
+          format: double
+        unknown_miles:
+          type: number
+          format: double
+        avg_risk:
+          type: number
+          format: double
+          nullable: true
+        max_level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+      required:
+        - avg_risk
+        - high_miles
+        - low_miles
+        - max_level
+        - moderate_miles
+        - no_travel_miles
+        - severe_miles
+        - unknown_miles
+    NullEnum:
+      enum:
+        - null
+    Place:
+      type: object
+      properties:
+        label:
+          type: string
+          maxLength: 200
+        lat:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        lon:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+      required:
+        - label
+        - lat
+        - lon
+    PlaceRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 200
+        lat:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        lon:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+      required:
+        - label
+        - lat
+        - lon
+    PlaceResult:
+      type: object
+      properties:
+        label:
+          type: string
+          maxLength: 200
+        lat:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        lon:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+      required:
+        - label
+        - lat
+        - lon
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        inputs:
+          $ref: '#/components/schemas/PlanInputs'
+        warnings:
+          type: array
+          items:
+            type: string
+        routes_found:
+          type: integer
+        recommended:
+          type: string
+          nullable: true
+        recommendation_reason:
+          type: string
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Route'
+        meta:
+          $ref: '#/components/schemas/PlanMeta'
+      required:
+        - created_at
+        - expires_at
+        - id
+        - inputs
+        - meta
+        - recommendation_reason
+        - recommended
+        - routes
+        - routes_found
+        - status
+        - warnings
+    PlanInputs:
+      type: object
+      properties:
+        origin:
+          $ref: '#/components/schemas/Place'
+        destination:
+          $ref: '#/components/schemas/Place'
+        departure_utc:
+          type: string
+          format: date-time
+        load_lb:
+          type: integer
+        interval_mi:
+          type: integer
+      required:
+        - departure_utc
+        - destination
+        - interval_mi
+        - load_lb
+        - origin
+    PlanMeta:
+      type: object
+      properties:
+        timings_ms:
+          type: object
+          additionalProperties:
+            type: integer
+        interval_mi:
+          type: integer
+        weather_points:
+          type: integer
+        forecast_window_utc:
+          type: array
+          items:
+            type: string
+            format: date-time
+      required:
+        - forecast_window_utc
+        - interval_mi
+        - timings_ms
+        - weather_points
+    PlanRequestRequest:
+      type: object
+      properties:
+        origin:
+          $ref: '#/components/schemas/PlaceRequest'
+        destination:
+          $ref: '#/components/schemas/PlaceRequest'
+        departure:
+          type: string
+          format: date-time
+          description: ISO 8601; converted to UTC.
+        load_lb:
+          type: integer
+          maximum: 120000
+          minimum: 1
+        interval_mi:
+          $ref: '#/components/schemas/IntervalMiEnum'
+      required:
+        - departure
+        - destination
+        - interval_mi
+        - load_lb
+        - origin
+    ProviderHealth:
+      type: object
+      properties:
+        tomtom:
+          type: boolean
+        ors:
+          type: boolean
+      required:
+        - ors
+        - tomtom
+    Risk:
+      type: object
+      properties:
+        level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        wind:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/ComponentLevelEnum'
+            - $ref: '#/components/schemas/NullEnum'
+        rain:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/ComponentLevelEnum'
+            - $ref: '#/components/schemas/NullEnum'
+        snow:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/ComponentLevelEnum'
+            - $ref: '#/components/schemas/NullEnum'
+        drivers:
+          type: array
+          items:
+            type: string
+        load_rule_applied:
+          type: string
+          nullable: true
+      required:
+        - drivers
+        - level
+        - load_rule_applied
+        - rain
+        - snow
+        - wind
+    RiskLevelEnum:
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - SEVERE
+        - NO_TRAVEL
+        - UNKNOWN
+      type: string
+      description: |-
+        * `LOW` - LOW
+        * `MODERATE` - MODERATE
+        * `HIGH` - HIGH
+        * `SEVERE` - SEVERE
+        * `NO_TRAVEL` - NO_TRAVEL
+        * `UNKNOWN` - UNKNOWN
+    RiskRules:
+      type: object
+      properties:
+        levels:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskLevelEnum'
+        colors:
+          type: object
+          additionalProperties:
+            type: string
+        scores:
+          type: object
+          additionalProperties:
+            type: integer
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        wind_mph:
+          type: array
+          items:
+            $ref: '#/components/schemas/Band'
+        rain_in_hr:
+          type: array
+          items:
+            $ref: '#/components/schemas/Band'
+        snow_in_hr:
+          type: array
+          items:
+            $ref: '#/components/schemas/Band'
+        load_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoadRule'
+      required:
+        - colors
+        - labels
+        - levels
+        - load_rules
+        - rain_in_hr
+        - scores
+        - snow_in_hr
+        - wind_mph
+    Route:
+      type: object
+      properties:
+        label:
+          type: string
+        rank:
+          type: integer
+        provider:
+          type: string
+        distance_mi:
+          type: number
+          format: double
+        travel_time_s:
+          type: integer
+        departure_utc:
+          type: string
+          format: date-time
+        arrival_utc:
+          type: string
+          format: date-time
+        geometry:
+          type: string
+          description: Encoded polyline, precision 5, simplified.
+        metrics:
+          $ref: '#/components/schemas/Metrics'
+        reason:
+          type: string
+          nullable: true
+        lost_because:
+          type: string
+          nullable: true
+        warnings:
+          type: array
+          items:
+            type: string
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Segment'
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Checkpoint'
+      required:
+        - arrival_utc
+        - checkpoints
+        - departure_utc
+        - distance_mi
+        - geometry
+        - label
+        - lost_because
+        - metrics
+        - provider
+        - rank
+        - reason
+        - segments
+        - travel_time_s
+        - warnings
+    Segment:
+      type: object
+      properties:
+        from_mi:
+          type: number
+          format: double
+        to_mi:
+          type: number
+          format: double
+        from_frac:
+          type: number
+          format: double
+        to_frac:
+          type: number
+          format: double
+        level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+      required:
+        - from_frac
+        - from_mi
+        - level
+        - to_frac
+        - to_mi
+    StatusEnum:
+      enum:
+        - ready
+        - partial
+        - failed
+      type: string
+      description: |-
+        * `ready` - ready
+        * `partial` - partial
+        * `failed` - failed
+    Weather:
+      type: object
+      properties:
+        wind_mph:
+          type: number
+          format: double
+          nullable: true
+        gust_mph:
+          type: number
+          format: double
+          nullable: true
+        rain_in_hr:
+          type: number
+          format: double
+          nullable: true
+        snow_in_hr:
+          type: number
+          format: double
+          nullable: true
+        forecast_hour_utc:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - forecast_hour_utc
+        - gust_mph
+        - rain_in_hr
+        - snow_in_hr
+        - wind_mph
