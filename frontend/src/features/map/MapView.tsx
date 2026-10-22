@@ -2,12 +2,16 @@ import maplibregl, { type MapLayerMouseEvent, type Map as MapLibreMap } from 'ma
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { Plan } from '../../api/types';
+import type { Heatmap, Plan } from '../../api/types';
 import { boundsOf, type Bounds, type LonLat } from '../../lib/geo';
 import { decodePolyline } from '../../lib/polyline';
 import { useUIStore } from '../../store/ui';
 import { CheckpointPopup } from '../checkpoint/CheckpointPopup';
 import { findCheckpoint } from '../checkpoint/CheckpointDrawer';
+import type { HourBus } from '../timeline/hourBus';
+import { buildTrack, truckPosition } from '../timeline/truckPosition';
+import { addHeatmapLayer, paintHeatHour, removeHeatmapLayer } from './layers/heatmap';
+import { addTruckLayers, removeTruckLayers, updateTrucks } from './layers/trucks';
 import {
   addCheckpointLayers,
   CHECKPOINT_LAYER,
@@ -35,11 +39,17 @@ function fit(map: MapLibreMap, bounds: Bounds | null) {
   map.fitBounds(bounds, { padding: cameraPadding(), duration: FIT_DURATION_MS, maxZoom: 11 });
 }
 
+const HOUR_MS = 3_600_000;
+
 export interface MapViewProps {
   plan: Plan | null;
+  heatmap: Heatmap | null;
+  bus: HourBus;
+  /** Epoch ms of slider hour 0 (departure hour, UTC floor). */
+  startMs: number;
 }
 
-export default function MapView({ plan }: MapViewProps) {
+export default function MapView({ plan, heatmap, bus, startMs }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const map = useMapInstance(containerRef);
   const popupRef = useRef<maplibregl.Popup | null>(null);
@@ -53,6 +63,10 @@ export default function MapView({ plan }: MapViewProps) {
     return out;
   }, [plan]);
   const labels = useMemo(() => plan?.routes.map((r) => r.label) ?? [], [plan]);
+  const tracks = useMemo(
+    () => plan?.routes.map((r) => buildTrack(r, lines.get(r.label) ?? [])) ?? [],
+    [plan, lines],
+  );
 
   // Sources + layers: added once per plan, removed on plan change. Never re-created on hover.
   useEffect(() => {
@@ -74,7 +88,10 @@ export default function MapView({ plan }: MapViewProps) {
   useEffect(() => {
     if (!map || !plan) return;
     let prevSelected = useUIStore.getState().selectedRoute;
+    let prevHovered = useUIStore.getState().hoveredRoute;
     return useUIStore.subscribe((s) => {
+      if (s.selectedRoute === prevSelected && s.hoveredRoute === prevHovered) return;
+      prevHovered = s.hoveredRoute;
       paintRouteEmphasis(map, labels, s.selectedRoute, s.hoveredRoute, CHECKPOINT_LAYER);
       paintCheckpointEmphasis(map, s.selectedRoute);
       if (s.selectedRoute !== prevSelected) {
@@ -84,6 +101,30 @@ export default function MapView({ plan }: MapViewProps) {
       }
     });
   }, [map, plan, labels, lines]);
+
+  // Truck markers: one tiny source, positions driven by the hour bus (no React render).
+  useEffect(() => {
+    if (!map || !plan || tracks.length === 0) return;
+    const at = (hour: number) => tracks.map((t) => truckPosition(t, startMs + hour * HOUR_MS));
+    addTruckLayers(map, at(bus.get()));
+    const unsubscribe = bus.subscribe((hour) => updateTrucks(map, at(hour)));
+    return () => {
+      unsubscribe();
+      removeTruckLayers(map);
+    };
+  }, [map, plan, tracks, bus, startMs]);
+
+  // Corridor heatmap: setData once; scrubbing only changes `heatmap-weight` (paint property).
+  useEffect(() => {
+    if (!map || !plan || !heatmap) return;
+    const lowestRouteLayer = map.getStyle().layers.find((l) => l.id.startsWith('route-casing-'));
+    addHeatmapLayer(map, heatmap, lowestRouteLayer?.id);
+    const unsubscribe = bus.subscribe((hour) => paintHeatHour(map, hour));
+    return () => {
+      unsubscribe();
+      removeHeatmapLayer(map);
+    };
+  }, [map, plan, heatmap, bus]);
 
   // Pointer interactions (stable handlers, registered once per plan).
   useEffect(() => {

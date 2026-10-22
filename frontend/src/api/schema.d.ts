@@ -69,6 +69,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plans/{plan_id}/heatmap/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Corridor risk grid for hours 0–48 from the departure hour. Computed on the first call, then served from the stored plan. */
+        get: operations["plans_heatmap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/risk-rules/": {
         parameters: {
             query?: never;
@@ -142,6 +159,19 @@ export interface components {
         Health: {
             status: string;
             providers: components["schemas"]["ProviderHealth"];
+        };
+        Heatmap: {
+            /** @description [lon, lat] per grid point. */
+            points: number[][];
+            /** @description 49 UTC hours. */
+            hours: string[];
+            /** Format: double */
+            spacing_mi: number;
+            /** @description risk[point][hour]: Level score 0–4, -1 unknown. */
+            risk: number[][];
+            wind: number[][];
+            rain: number[][];
+            snow: number[][];
         };
         /**
          * @description * `10` - 10
@@ -482,6 +512,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Plan"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    plans_heatmap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Heatmap"];
                 };
             };
             404: {

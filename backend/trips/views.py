@@ -26,12 +26,19 @@ from .models import TripPlan
 from .serializers import (
     ErrorSerializer,
     GeocodeQuerySerializer,
+    HeatmapSerializer,
     PlaceResultSerializer,
     PlanRequestSerializer,
     PlanSerializer,
     RiskRulesSerializer,
 )
-from .services import PlanInput, build_plan, risk_rules_payload, serialize_plan
+from .services import (
+    PlanInput,
+    build_plan,
+    get_or_build_heatmap,
+    risk_rules_payload,
+    serialize_plan,
+)
 from .throttles import GeocodeThrottle, PlanCreateThrottle
 
 GEOCODE_CACHE_TTL_S = 24 * 3600
@@ -129,6 +136,17 @@ class PlanDetailView(APIView):
     )
     def get(self, request: Request, plan_id: uuid.UUID) -> Response:
         return Response(serialize_plan(get_live_plan(plan_id)))
+
+
+class PlanHeatmapView(APIView):
+    @extend_schema(
+        operation_id="plans_heatmap",
+        responses={200: HeatmapSerializer, 404: ErrorSerializer},
+        description="Corridor risk grid for hours 0–48 from the departure hour. Computed on the "
+        "first call, then served from the stored plan.",
+    )
+    def get(self, request: Request, plan_id: uuid.UUID) -> Response:
+        return Response(get_or_build_heatmap(get_live_plan(plan_id)))
 
 
 class RiskRulesView(APIView):

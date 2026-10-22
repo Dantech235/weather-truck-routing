@@ -43,6 +43,7 @@ from risk.rules import (
 
 from .alternatives import LabeledRoute, find_routes
 from .eta import EtaModel, etas_for_fractions
+from .heatmap import build_heatmap
 from .models import TripPlan
 from .ranking import rank
 from .reasons import NO_SAFE_ROUTE, lost_because, winner_reason
@@ -453,3 +454,25 @@ def risk_rules_payload() -> dict[str, Any]:
             },
         ],
     }
+
+
+# --- Heatmap ----------------------------------------------------------------------------------
+
+
+def get_or_build_heatmap(plan: TripPlan, weather: WeatherProvider | None = None) -> dict[str, Any]:
+    """Compute the corridor heatmap on first request, then serve it from the plan."""
+    if plan.heatmap is not None:
+        return dict(plan.heatmap)
+    provider = weather or registry.weather()
+    lines = [polyline.decode(r["geometry"], 5) for r in plan.result["routes"]]
+    timer = Timer()
+    with timer.stage("heatmap"):
+        payload = build_heatmap(
+            lines,
+            plan.departure_utc,
+            plan.load_lb,
+            lambda pts, start, end: get_weather(provider, pts, start, end),
+        )
+    plan.heatmap = payload
+    plan.save(update_fields=["heatmap"])
+    return payload

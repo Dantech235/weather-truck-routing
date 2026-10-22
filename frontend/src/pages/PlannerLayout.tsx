@@ -1,17 +1,27 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreatePlan, useRiskRules } from '../api/queries';
+import { useCreatePlan, useHeatmap, useRiskRules } from '../api/queries';
 import type { ApiError } from '../api/client';
 import type { Plan } from '../api/types';
 import { CheckpointDrawer } from '../features/checkpoint/CheckpointDrawer';
 import { Legend } from '../features/map/Legend';
 import { PlanBanners } from '../features/routes/NoSafeRouteBanner';
 import { RouteList } from '../features/routes/RouteList';
+import { ForecastSlider, type ArrivalMarker } from '../features/timeline/ForecastSlider';
+import { createHourBus } from '../features/timeline/hourBus';
 import { TripForm } from '../features/trip-form/TripForm';
 import { applyRiskRules } from '../lib/risk';
 import { useUIStore } from '../store/ui';
 
 const MapView = lazy(() => import('../features/map/MapView'));
+const HOUR_MS = 3_600_000;
+
+/** Slider hour 0 = departure hour (UTC floor), matching the heatmap's first hour. */
+function departureHourMs(plan: Plan | null): number {
+  if (!plan) return 0;
+  const t = Date.parse(plan.inputs.departure_utc);
+  return Math.floor(t / HOUR_MS) * HOUR_MS;
+}
 
 interface Props {
   plan: Plan | null;
@@ -87,6 +97,24 @@ export function PlannerLayout({ plan, loading = false, loadError = null }: Props
   }, [plan, reset]);
 
   const busy = create.isPending || loading;
+  const heat = useHeatmap(plan?.id);
+  const planId = plan?.id;
+  // One imperative hour channel per plan (scrubbing never goes through React state).
+  const bus = useMemo(() => createHourBus(0, planId), [planId]);
+  const startMs = departureHourMs(plan);
+  const arrivals: ArrivalMarker[] = useMemo(
+    () =>
+      plan?.routes.map((r) => ({
+        label: r.label,
+        hour: (Date.parse(r.arrival_utc) - startMs) / HOUR_MS,
+      })) ?? [],
+    [plan, startMs],
+  );
+  const heatStatus = heat.isLoading
+    ? 'Loading forecast heatmap…'
+    : heat.isError
+      ? 'Heatmap unavailable; trucks still move with the slider.'
+      : null;
 
   return (
     <div className="relative h-full w-full overflow-hidden">
@@ -94,12 +122,18 @@ export function PlannerLayout({ plan, loading = false, loadError = null }: Props
         <div className="progress-bar fixed inset-x-0 top-0 z-50 h-0.5 bg-accent" aria-hidden />
       )}
       <Suspense fallback={<MapSkeleton />}>
-        <MapView plan={plan} />
+        <MapView plan={plan} heatmap={heat.data ?? null} bus={bus} startMs={startMs} />
       </Suspense>
 
-      <div className="pointer-events-none absolute bottom-4 left-[416px] z-10 hidden min-[900px]:block">
+      <div className="pointer-events-none absolute bottom-[104px] left-[416px] z-10 hidden min-[900px]:block">
         <Legend />
       </div>
+
+      {plan && (
+        <div className="slider-dock absolute z-20">
+          <ForecastSlider bus={bus} startMs={startMs} arrivals={arrivals} status={heatStatus} />
+        </div>
+      )}
 
       <aside
         className="panel absolute z-20 flex flex-col overflow-hidden border-slate-200 bg-slate-50/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"

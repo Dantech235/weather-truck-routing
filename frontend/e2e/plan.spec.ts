@@ -1,15 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
 
-declare global {
-  interface Window {
-    __truckMap?: {
-      getLayer: (id: string) => unknown;
-      project: (lngLat: [number, number]) => { x: number; y: number };
-      getCanvas: () => HTMLCanvasElement;
-    };
-  }
-}
-
 async function choosePlace(page: Page, label: string, query: string, option: string) {
   await page.getByRole('combobox', { name: label }).fill(query);
   await page.getByRole('option', { name: option }).click();
@@ -69,6 +59,19 @@ test('plan Dallas → Denver and inspect a checkpoint', async ({ page }) => {
   await expect(drawer).toContainText('Forecast hour used');
   await page.keyboard.press('Escape');
   await expect(drawer).toBeHidden();
+
+  // Forecast slider: keyboard and drag both move the hour label.
+  const slider = page.getByTestId('forecast-slider');
+  const clock = page.getByTestId('slider-clock');
+  await expect(clock).toContainText('+0.0 h');
+  await slider.focus();
+  await page.keyboard.press('Shift+ArrowRight');
+  await expect(slider).toHaveAttribute('aria-valuenow', '6.0');
+  await expect(clock).toContainText('+6.0 h');
+  await page.keyboard.press('End');
+  await expect(clock).toContainText('+48.0 h');
+  await page.keyboard.press('Home');
+  await expect(clock).toContainText('+0.0 h');
 
   // Shareable URL survives a reload.
   await page.reload();

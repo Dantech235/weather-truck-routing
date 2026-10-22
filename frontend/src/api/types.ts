@@ -12,3 +12,4 @@ export type PlanRequest = S['PlanRequestRequest'];
 export type RiskRules = S['RiskRules'];
 export type RiskLevel = S['RiskLevelEnum'];
 export type ComponentLevel = S['ComponentLevelEnum'];
+export type Heatmap = S['Heatmap'];

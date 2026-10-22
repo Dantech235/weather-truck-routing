@@ -1,0 +1,18 @@
+{
+  "measured_at": "2026-10-22T11:43:50.630Z",
+  "environment": "headless Chromium (software WebGL), dev build, 1440×900",
+  "scrub": {
+    "pointer_moves": 48,
+    "duration_ms": 20581,
+    "react_commits_during_drag": 0,
+    "react_commits_on_pointer_up": 0,
+    "fps": 8
+  },
+  "playback": {
+    "duration_ms": 4457,
+    "hours_advanced": 14.4,
+    "react_commits_on_play_click": 1,
+    "react_commits_while_playing": 0,
+    "fps": 6
+  }
+}

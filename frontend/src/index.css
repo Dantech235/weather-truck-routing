@@ -35,7 +35,15 @@ body {
   .panel {
     @apply inset-x-0 bottom-0 max-h-[55vh] rounded-t-2xl border-t;
   }
+  /* Forecast slider: bottom dock beside the panel on desktop, above the sheet on phones. */
+  .slider-dock {
+    @apply inset-x-2;
+    bottom: calc(55vh + 8px);
+  }
   @media (min-width: 900px) {
+    .slider-dock {
+      @apply bottom-4 left-[416px] right-4;
+    }
     .panel {
       @apply inset-y-0 left-0 right-auto max-h-none w-[400px] rounded-none border-r border-t-0;
     }

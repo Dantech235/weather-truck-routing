@@ -140,3 +140,53 @@ def simplify(coords: Sequence[LatLon], tolerance_deg: float) -> list[LatLon]:
             stack.append((i, worst))
             stack.append((worst, j))
     return [c for c, k in zip(coords, keep, strict=True) if k]
+
+
+def buffer_bbox(
+    lines: Sequence[Sequence[LatLon]], buffer_mi: float
+) -> tuple[float, float, float, float]:
+    """(min_lat, min_lon, max_lat, max_lon) of all lines, expanded by `buffer_mi` on every side."""
+    pts = [p for line in lines for p in line]
+    if not pts:
+        raise ValueError("no coordinates")
+    min_lat, max_lat = min(p[0] for p in pts), max(p[0] for p in pts)
+    min_lon, max_lon = min(p[1] for p in pts), max(p[1] for p in pts)
+    dlat = buffer_mi / 69.0
+    widest = max(abs(min_lat - dlat), abs(max_lat + dlat))
+    dlon = buffer_mi / (69.172 * max(0.05, math.cos(math.radians(widest))))
+    return (min_lat - dlat, min_lon - dlon, max_lat + dlat, max_lon + dlon)
+
+
+def corridor_grid(
+    lines: Sequence[Sequence[LatLon]],
+    buffer_mi: float = 25.0,
+    spacing_mi: float = 12.0,
+    sample_step_mi: float = 2.0,
+    max_points: int = 600,
+    spacing_step_mi: float = 2.0,
+) -> tuple[list[LatLon], float]:
+    """Grid points within `buffer_mi` of any route (routes sampled every `sample_step_mi`).
+
+    Spacing starts at `spacing_mi` and grows by `spacing_step_mi` until ≤ `max_points` remain.
+    Returns (points, spacing_mi used).
+    """
+    min_lat, min_lon, max_lat, max_lon = buffer_bbox(lines, buffer_mi)
+    samples = [p for line in lines for p in sample_polyline(line, sample_step_mi)]
+    index = NearIndex(samples, buffer_mi)
+    mid_lat = math.radians((min_lat + max_lat) / 2)
+    spacing = spacing_mi
+    while True:
+        dlat = spacing / 69.0
+        dlon = spacing / (69.172 * max(0.05, math.cos(mid_lat)))
+        points: list[LatLon] = []
+        lat = min_lat
+        while lat <= max_lat + 1e-9:
+            lon = min_lon
+            while lon <= max_lon + 1e-9:
+                if index.near((lat, lon)):
+                    points.append((lat, lon))
+                lon += dlon
+            lat += dlat
+        if len(points) <= max_points:
+            return points, spacing
+        spacing += spacing_step_mi

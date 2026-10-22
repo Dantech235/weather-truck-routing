@@ -202,3 +202,19 @@ class RiskRulesSerializer(serializers.Serializer[dict[str, Any]]):
     rain_in_hr = BandSerializer(many=True)
     snow_in_hr = BandSerializer(many=True)
     load_rules = LoadRuleSerializer(many=True)
+
+
+class HeatmapSerializer(serializers.Serializer[dict[str, Any]]):
+    points = serializers.ListField(
+        child=serializers.ListField(child=serializers.FloatField(), min_length=2, max_length=2),
+        help_text="[lon, lat] per grid point.",
+    )
+    hours = serializers.ListField(child=serializers.DateTimeField(), help_text="49 UTC hours.")
+    spacing_mi = serializers.FloatField()
+    risk = serializers.ListField(
+        child=serializers.ListField(child=serializers.IntegerField()),
+        help_text="risk[point][hour]: Level score 0–4, -1 unknown.",
+    )
+    wind = serializers.ListField(child=serializers.ListField(child=serializers.FloatField()))
+    rain = serializers.ListField(child=serializers.ListField(child=serializers.FloatField()))
+    snow = serializers.ListField(child=serializers.ListField(child=serializers.FloatField()))

@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, ApiError } from './client';
-import type { Place, Plan, PlanRequest, RiskRules } from './types';
+import type { Heatmap, Place, Plan, PlanRequest, RiskRules } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const queryKeys = {
   geocode: (q: string) => ['geocode', q] as const,
   plan: (id: string) => ['plan', id] as const,
+  heatmap: (id: string) => ['heatmap', id] as const,
   riskRules: ['risk-rules'] as const,
 };
 
@@ -51,5 +52,16 @@ export function useRiskRules() {
     queryKey: queryKeys.riskRules,
     queryFn: ({ signal }) => apiFetch<RiskRules>('/api/v1/risk-rules/', { signal }),
     staleTime: Infinity,
+  });
+}
+
+export function useHeatmap(planId: string | undefined) {
+  return useQuery<Heatmap, ApiError>({
+    queryKey: queryKeys.heatmap(planId ?? ''),
+    queryFn: ({ signal }) =>
+      apiFetch<Heatmap>(`/api/v1/plans/${planId ?? ''}/heatmap/`, { signal }),
+    enabled: Boolean(planId),
+    staleTime: Infinity,
+    retry: (count, error) => error.status >= 500 && count < 2,
   });
 }
