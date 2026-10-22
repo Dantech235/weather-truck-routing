@@ -90,7 +90,7 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
       aria-modal="false"
       aria-labelledby="cp-title"
       data-testid="checkpoint-drawer"
-      className="checkpoint-drawer surface scroll-thin absolute bottom-0 right-0 top-0 z-30 w-full max-w-sm overflow-y-auto p-5 sm:bottom-3 sm:right-3 sm:top-3 sm:rounded-[20px]"
+      className="checkpoint-drawer surface scroll-thin fixed inset-0 z-40 w-full overflow-y-auto overscroll-contain !bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] dark:!bg-slate-900 sm:absolute sm:inset-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-w-sm sm:rounded-[20px] sm:!bg-white/90 sm:dark:!bg-slate-900/90"
     >
       <div className="flex items-start justify-between gap-2">
         <div>

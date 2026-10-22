@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { formatInTimeZone } from 'date-fns-tz';
-import { useEffect, useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { browserTimeZone } from '../../lib/format';
 import { useUIStore } from '../../store/ui';
 import { clampHour, MAX_HOUR, type HourBus } from './hourBus';
@@ -8,12 +8,54 @@ import { usePlayback } from './usePlayback';
 
 const HOUR_MS = 3_600_000;
 const TICK_EVERY = 6;
+/** Room one tick label ("Thu 12 AM") needs, in px. */
+const LABEL_PX = 70;
+/** Arrival markers closer than this share one label. */
+const ARRIVAL_MERGE_PX = 22;
 
-/** Every 24 h on phones, every 12 h on small tablets, every 6 h from md up. */
-function tickVisibility(hour: number): string {
-  if (hour % 24 === 0) return '';
-  if (hour % 12 === 0) return 'hidden sm:inline';
-  return 'hidden md:inline';
+/** Label every 6, 12 or 24 h: the densest step whose labels fit the track's real width. */
+export function tickStep(trackPx: number): number {
+  for (const step of [6, 12, 24]) {
+    if ((MAX_HOUR / step + 1) * LABEL_PX <= trackPx) return step;
+  }
+  return 48;
+}
+
+export interface ArrivalCluster {
+  labels: string[];
+  hours: number[];
+  /** Label position along the track, 0–1. */
+  at: number;
+}
+
+/** Group arrivals whose markers would overlap at this track width. */
+export function clusterArrivals(arrivals: ArrivalMarker[], trackPx: number): ArrivalCluster[] {
+  const sorted = [...arrivals]
+    .map((a) => ({ label: a.label, hour: clampHour(a.hour) }))
+    .sort((a, b) => a.hour - b.hour);
+  const pxPerHour = trackPx / MAX_HOUR;
+  const out: ArrivalCluster[] = [];
+  for (const a of sorted) {
+    const last = out[out.length - 1];
+    const prevHour = last?.hours[last.hours.length - 1];
+    if (last && prevHour !== undefined && (a.hour - prevHour) * pxPerHour < ARRIVAL_MERGE_PX) {
+      last.labels.push(a.label);
+      last.hours.push(a.hour);
+    } else {
+      out.push({ labels: [a.label], hours: [a.hour], at: 0 });
+    }
+  }
+  for (const c of out) {
+    c.at = c.hours.reduce((t, h) => t + h, 0) / c.hours.length / MAX_HOUR;
+  }
+  return out;
+}
+
+/** Keep labels near the ends inside the track. */
+function edgeAlign(at: number): string {
+  if (at < 0.04) return 'translate-x-0';
+  if (at > 0.96) return '-translate-x-full';
+  return '-translate-x-1/2';
 }
 
 export interface ArrivalMarker {
@@ -43,6 +85,19 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
   const commit = useUIStore((s) => s.setSliderHour);
   const { toggle, pause } = usePlayback(bus);
   const tz = useMemo(() => browserTimeZone(), []);
+  // Track width drives label density. Updated on resize only, never while scrubbing.
+  const [trackPx, setTrackPx] = useState(600);
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setTrackPx(Math.round(entry.contentRect.width));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const step = tickStep(trackPx);
+  const clusters = useMemo(() => clusterArrivals(arrivals, trackPx), [arrivals, trackPx]);
 
   const ticks = useMemo(
     () =>
@@ -142,7 +197,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2 text-xs">
             <span
-              className="font-semibold tabular-nums"
+              className="min-w-0 truncate font-semibold tabular-nums"
               ref={clockRef}
               data-testid="slider-clock"
               aria-live="off"
@@ -153,7 +208,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
           </div>
           <div
             ref={trackRef}
-            className="relative mt-2 h-6 cursor-pointer touch-none select-none"
+            className="relative mt-4 h-6 cursor-pointer touch-none select-none"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -169,15 +224,24 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
             {arrivals.map((a) => (
               <div
                 key={a.label}
-                className="absolute top-0 h-6 w-0.5 -translate-x-1/2 rounded-full bg-slate-900/70 dark:bg-white/70"
+                className="absolute top-0.5 h-5 w-0.5 -translate-x-1/2 rounded-full bg-slate-900/70 dark:bg-white/70"
                 style={{ left: `${(clampHour(a.hour) / MAX_HOUR) * 100}%` }}
                 title={`Route ${a.label} arrives`}
                 aria-hidden
+              />
+            ))}
+            {clusters.map((c) => (
+              <span
+                key={c.labels.join('')}
+                className={clsx(
+                  'absolute -top-3.5 whitespace-nowrap text-[10px] font-bold leading-none',
+                  edgeAlign(c.at),
+                )}
+                style={{ left: `${c.at * 100}%` }}
+                aria-hidden
               >
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] font-bold">
-                  {a.label}
-                </span>
-              </div>
+                {c.labels.join(' ')}
+              </span>
             ))}
             <div
               ref={thumbRef}
@@ -199,7 +263,7 @@ export function ForecastSlider({ bus, startMs, arrivals, status }: Props) {
                 key={t.hour}
                 className={clsx(
                   'absolute -translate-x-1/2 whitespace-nowrap tabular-nums first:translate-x-0 last:-translate-x-full',
-                  tickVisibility(t.hour),
+                  t.hour % step !== 0 && 'hidden',
                 )}
                 style={{ left: `${(t.hour / MAX_HOUR) * 100}%` }}
               >

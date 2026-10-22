@@ -9,7 +9,7 @@ export function Legend() {
   const levels = data.levels.filter(isRiskLevel) as RiskLevel[];
   return (
     <div
-      className="surface pointer-events-auto rounded-full px-3.5 py-2 text-xs font-medium"
+      className="surface pointer-events-auto w-fit max-w-full rounded-2xl px-3.5 py-2 text-xs font-medium"
       aria-label="Risk legend"
     >
       <ul className="flex flex-wrap gap-x-3 gap-y-1">

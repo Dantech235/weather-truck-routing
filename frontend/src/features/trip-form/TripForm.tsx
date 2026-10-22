@@ -106,26 +106,26 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
           />
         )}
       />
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor="departure" className="label">
-            Departure (local)
-          </label>
-          <input
-            id="departure"
-            type="datetime-local"
-            step={900}
-            className={clsx('field', errors.departureLocal && 'field-error')}
-            aria-invalid={Boolean(errors.departureLocal)}
-            aria-describedby={errors.departureLocal ? 'departure-error' : undefined}
-            {...register('departureLocal')}
-          />
-          {errors.departureLocal && (
-            <p id="departure-error" className="mt-1 text-xs text-red-600 dark:text-red-400">
-              {errors.departureLocal.message}
-            </p>
-          )}
-        </div>
+      <div>
+        <label htmlFor="departure" className="label">
+          Departure (local)
+        </label>
+        <input
+          id="departure"
+          type="datetime-local"
+          step={900}
+          className={clsx('field', errors.departureLocal && 'field-error')}
+          aria-invalid={Boolean(errors.departureLocal)}
+          aria-describedby={errors.departureLocal ? 'departure-error' : undefined}
+          {...register('departureLocal')}
+        />
+        {errors.departureLocal && (
+          <p id="departure-error" className="mt-1 text-xs text-red-600 dark:text-red-400">
+            {errors.departureLocal.message}
+          </p>
+        )}
+      </div>
+      <div className="grid grid-cols-1 gap-4 min-[340px]:grid-cols-[2fr_3fr] min-[340px]:gap-3">
         <div>
           <label htmlFor="load" className="label">
             Load (lb)
@@ -149,43 +149,43 @@ export function TripForm({ onSubmit, submitting, error, initial }: Props) {
             </p>
           )}
         </div>
+        <fieldset className="min-w-0">
+          <legend className="label">Checkpoint every</legend>
+          <Controller
+            control={control}
+            name="interval"
+            render={({ field }) => (
+              <div
+                role="radiogroup"
+                aria-label="Checkpoint interval"
+                className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-100/80 p-1 dark:border-white/10 dark:bg-white/5"
+              >
+                {INTERVALS.map((mi) => (
+                  <label
+                    key={mi}
+                    className={clsx(
+                      'cursor-pointer rounded-lg py-2 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-accent',
+                      field.value === mi
+                        ? 'bg-white text-accent shadow-sm dark:bg-white/15 dark:text-white'
+                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      name="interval"
+                      value={mi}
+                      checked={field.value === mi}
+                      onChange={() => field.onChange(mi)}
+                    />
+                    {mi} mi
+                  </label>
+                ))}
+              </div>
+            )}
+          />
+        </fieldset>
       </div>
-      <fieldset>
-        <legend className="label">Checkpoint every</legend>
-        <Controller
-          control={control}
-          name="interval"
-          render={({ field }) => (
-            <div
-              role="radiogroup"
-              aria-label="Checkpoint interval"
-              className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-100/80 p-1 dark:border-white/10 dark:bg-white/5"
-            >
-              {INTERVALS.map((mi) => (
-                <label
-                  key={mi}
-                  className={clsx(
-                    'cursor-pointer rounded-lg py-1.5 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-accent',
-                    field.value === mi
-                      ? 'bg-white text-accent shadow-sm dark:bg-white/15 dark:text-white'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    className="sr-only"
-                    name="interval"
-                    value={mi}
-                    checked={field.value === mi}
-                    onChange={() => field.onChange(mi)}
-                  />
-                  {mi} mi
-                </label>
-              ))}
-            </div>
-          )}
-        />
-      </fieldset>
       {formError && (
         <p
           role="alert"

@@ -17,6 +17,17 @@ body,
   height: 100%;
 }
 
+/* Width of the floating side panel; the map overlays are placed relative to it. */
+.planner-root {
+  --panel-w: 400px;
+}
+
+@media (max-width: 899px) {
+  .planner-root {
+    --panel-w: min(340px, 46vw);
+  }
+}
+
 body {
   @apply bg-slate-100 text-slate-900 antialiased dark:bg-[#0b0f1a] dark:text-slate-100;
 }

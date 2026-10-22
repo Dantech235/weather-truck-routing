@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import type { Heatmap, Plan } from '../../api/types';
 import { boundsOf, type Bounds, type LonLat } from '../../lib/geo';
 import { mapBottomInset } from '../../lib/layoutMetrics';
+import { DESKTOP_QUERY } from '../../lib/useMediaQuery';
 import { decodePolyline } from '../../lib/polyline';
 import { routeDrawIn } from '../../animations/timelines';
 import { prefersReducedMotion } from '../../animations/useReducedMotion';
@@ -30,11 +31,20 @@ import {
 } from './layers/routes';
 import { useMapInstance } from './useMapInstance';
 
-const DESKTOP_MIN_WIDTH = 900;
 const FIT_DURATION_MS = 900;
 
 function cameraPadding() {
-  if (window.innerWidth >= DESKTOP_MIN_WIDTH) return { top: 60, bottom: 130, left: 448, right: 60 };
+  if (window.matchMedia?.(DESKTOP_QUERY).matches) {
+    // Keep routes clear of the floating side panel and the slider dock.
+    const panelRight = document.getElementById('planner')?.getBoundingClientRect().right ?? 412;
+    const short = window.innerHeight < 600;
+    return {
+      top: short ? 30 : 60,
+      bottom: short ? 120 : 130,
+      left: panelRight + 36,
+      right: short ? 30 : 60,
+    };
+  }
   return {
     top: 50,
     bottom: (mapBottomInset() || Math.round(window.innerHeight * 0.5)) + 16,

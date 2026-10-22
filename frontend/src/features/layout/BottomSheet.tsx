@@ -134,7 +134,7 @@ export function BottomSheet({ children, above, label }: Props) {
   return (
     <div
       ref={sheetRef}
-      className="fixed inset-x-0 bottom-0 z-20 flex flex-col rounded-t-[24px] border-t border-white/60 bg-white/95 shadow-[0_-8px_32px_-8px_rgba(15,23,42,0.2)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/95"
+      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex w-full max-w-2xl flex-col rounded-t-[24px] sm:border-x border-t border-white/60 bg-white/95 shadow-[0_-8px_32px_-8px_rgba(15,23,42,0.2)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/95"
       style={{ height: `${SHEET_VH * 100}dvh` }}
       data-testid="bottom-sheet"
       data-snap={snap}

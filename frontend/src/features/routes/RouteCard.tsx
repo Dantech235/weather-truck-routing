@@ -39,8 +39,8 @@ export function RouteCard({ route, recommended }: Props) {
           : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-float dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/20',
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold text-white dark:bg-white dark:text-slate-900">
             {route.label}
           </span>
@@ -63,7 +63,7 @@ export function RouteCard({ route, recommended }: Props) {
         <LevelChip level={m.max_level} />
       </div>
 
-      <dl className="mt-3 grid grid-cols-3 gap-2 text-sm tabular-nums">
+      <dl className="mt-3 grid grid-cols-3 gap-2 text-sm tabular-nums [&>div]:min-w-0">
         <div>
           <dt className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Distance

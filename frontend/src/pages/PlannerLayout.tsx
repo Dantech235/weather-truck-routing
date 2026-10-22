@@ -102,7 +102,7 @@ function CopyLinkButton({ planId }: { planId: string }) {
 function BrandMark() {
   return (
     <span
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-sky-500 text-white shadow-glow"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 bg-gradient-to-br from-accent to-sky-500 text-white shadow-glow"
       aria-hidden
     >
       <svg
@@ -151,6 +151,8 @@ export function PlannerLayout({ plan, loading = false, loadError = null }: Props
 
   const busy = create.isPending || loading;
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  // Short landscape screens: the legend moves from the map into the panel.
+  const isShort = useMediaQuery('(max-height: 520px)');
   const [mapKey, setMapKey] = useState(0);
   const heat = useHeatmap(plan?.id);
   const planId = plan?.id;
@@ -177,14 +179,14 @@ export function PlannerLayout({ plan, loading = false, loadError = null }: Props
 
   const panelContent = (
     <>
-      <header className="mb-5 flex items-center justify-between gap-3">
+      <header className="mb-5 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <BrandMark />
           <div className="min-w-0">
-            <h1 className="truncate text-[15px] font-semibold leading-tight tracking-tight">
+            <h1 className="text-[15px] font-semibold leading-tight tracking-tight">
               Truck Weather Routing
             </h1>
-            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs leading-snug text-slate-500 dark:text-slate-400">
               Safest route by forecast at arrival
             </p>
           </div>
@@ -221,13 +223,13 @@ export function PlannerLayout({ plan, loading = false, loadError = null }: Props
             <RouteList plan={plan} />
           </>
         )}
-        {!isDesktop && <Legend />}
+        {(!isDesktop || isShort) && <Legend />}
       </div>
     </>
   );
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="planner-root relative h-full w-full overflow-hidden">
       <a
         href="#planner"
         className="sr-only z-50 rounded-lg bg-white px-3 py-2 text-sm font-medium text-accent focus:not-sr-only focus:absolute focus:left-2 focus:top-2"
@@ -255,13 +257,17 @@ export function PlannerLayout({ plan, loading = false, loadError = null }: Props
 
       {isDesktop ? (
         <>
-          <div className="pointer-events-none absolute left-[428px] top-4 z-10">
+          <div className="pointer-events-none absolute left-[calc(var(--panel-w)+28px)] right-16 top-4 z-10 [@media(max-height:520px)]:hidden">
             <Legend />
           </div>
-          {slider && <div className="absolute bottom-4 left-[428px] right-4 z-20">{slider}</div>}
+          {slider && (
+            <div className="absolute bottom-3 left-[calc(var(--panel-w)+28px)] right-3 z-20 sm:bottom-4 sm:right-4">
+              {slider}
+            </div>
+          )}
           <aside
             id="planner"
-            className="surface absolute bottom-3 left-3 top-3 z-20 flex w-[400px] flex-col overflow-hidden rounded-[20px]"
+            className="surface absolute bottom-3 left-3 top-3 z-20 flex w-[var(--panel-w)] flex-col overflow-hidden rounded-[20px]"
             aria-label="Trip planner"
           >
             <div className="scroll-thin flex-1 overflow-y-auto p-5">{panelContent}</div>

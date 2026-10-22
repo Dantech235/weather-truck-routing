@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
-export const DESKTOP_QUERY = '(min-width: 900px)';
+/** Side-panel layout: wide screens, plus short landscape screens (phones turned sideways). */
+export const DESKTOP_QUERY =
+  '(min-width: 900px), (min-width: 640px) and (max-height: 520px) and (orientation: landscape)';
 
 /** Live media-query match (re-renders only when the match flips). */
 export function useMediaQuery(query: string): boolean {
