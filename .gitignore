@@ -18,3 +18,5 @@ frontend/node_modules/.tmp/
 .env.*
 !.env.example
 .DS_Store
+.vercel
+.env*.local

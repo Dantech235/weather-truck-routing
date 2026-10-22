@@ -1,4 +1,7 @@
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 import { useEffect, useRef } from 'react';
+import { MOTION, withMotion } from '../../animations/timelines';
 import type { Checkpoint, Plan } from '../../api/types';
 import { formatDuration, formatLocalDateTime, formatLocalTime } from '../../lib/format';
 import { useUIStore } from '../../store/ui';
@@ -27,6 +30,44 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
   const close = useUIStore((s) => s.selectCheckpoint);
   const closeRef = useRef<HTMLButtonElement>(null);
   const cp = selected ? findCheckpoint(plan, selected.route, selected.index) : undefined;
+  const asideRef = useRef<HTMLElement>(null);
+  const wasOpen = useRef(false);
+  const openKey = cp && selected ? `${selected.route}:${selected.index}` : null;
+
+  // Slide in from the right when opening; re-stagger the content when the checkpoint changes.
+  useGSAP(
+    () => {
+      const el = asideRef.current;
+      if (!openKey || !el) {
+        wasOpen.current = false;
+        return;
+      }
+      const opening = !wasOpen.current;
+      wasOpen.current = true;
+      const mm = withMotion((reduce) => {
+        if (reduce) return;
+        if (opening) {
+          gsap.from(el, {
+            xPercent: 100,
+            duration: MOTION.drawer,
+            ease: 'power3.out',
+            clearProps: 'transform',
+          });
+        }
+        gsap.from(el.querySelectorAll('.drawer-content > *'), {
+          opacity: 0,
+          y: 8,
+          duration: MOTION.drawer,
+          stagger: 0.04,
+          delay: opening ? 0.1 : 0,
+          ease: 'power3.out',
+          clearProps: 'transform,opacity',
+        });
+      });
+      return () => mm.revert();
+    },
+    { dependencies: [openKey] },
+  );
 
   useEffect(() => {
     if (!cp) return;
@@ -44,6 +85,7 @@ export function CheckpointDrawer({ plan }: { plan: Plan }) {
 
   return (
     <aside
+      ref={asideRef}
       role="dialog"
       aria-modal="false"
       aria-labelledby="cp-title"

@@ -202,3 +202,21 @@ def test_departure_is_stored_in_utc(api: Client) -> None:
     local = (datetime.now(UTC) + timedelta(hours=3)).astimezone().replace(microsecond=0)
     plan = post(api, body(departure=local.isoformat())).json()
     assert plan["inputs"]["departure_utc"].endswith("Z")
+
+
+@override_settings(CRON_SECRET="s3cret")
+def test_cron_purge_requires_secret(api: Client) -> None:
+    plan_id = post(api, body()).json()["id"]
+    TripPlan.objects.filter(id=plan_id).update(expires_at=timezone.now() - timedelta(seconds=1))
+    url = "/api/v1/internal/purge-expired-plans/"
+    assert api.get(url).status_code == 403
+    assert api.get(url, HTTP_AUTHORIZATION="Bearer wrong").status_code == 403
+    res = api.get(url, HTTP_AUTHORIZATION="Bearer s3cret")
+    assert res.status_code == 200
+    assert res.json() == {"deleted": 1}
+
+
+@override_settings(CRON_SECRET="")
+def test_cron_purge_disabled_without_secret(api: Client) -> None:
+    res = api.get("/api/v1/internal/purge-expired-plans/", HTTP_AUTHORIZATION="Bearer ")
+    assert res.status_code == 403

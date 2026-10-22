@@ -39,6 +39,17 @@ dev = [
 [tool.setuptools]
 packages = []
 
+[tool.uv]
+package = false
+
+# Vercel (zero-config Django): entrypoint from WSGI_APPLICATION; this build step runs after
+# dependencies are installed. See docs/deploy-vercel.md.
+[tool.vercel]
+entrypoint = "config.wsgi:application"
+
+[tool.vercel.scripts]
+build = "python scripts/vercel_build.py"
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

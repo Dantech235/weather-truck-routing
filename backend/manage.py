@@ -6,7 +6,9 @@ import sys
 
 
 def main() -> None:
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
+    # Vercel sets VERCEL=1 when it runs manage.py to discover the settings module.
+    default = "config.settings.prod" if os.environ.get("VERCEL") else "config.settings.dev"
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", default)
     from django.core.management import execute_from_command_line
 
     execute_from_command_line(sys.argv)

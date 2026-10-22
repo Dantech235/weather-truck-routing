@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hmac
 import re
 import uuid
 from dataclasses import asdict
 from typing import Any
 
+from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -36,6 +38,7 @@ from .services import (
     PlanInput,
     build_plan,
     get_or_build_heatmap,
+    purge_expired_plans,
     risk_rules_payload,
     serialize_plan,
 )
@@ -153,3 +156,15 @@ class RiskRulesView(APIView):
     @extend_schema(operation_id="risk_rules", responses={200: RiskRulesSerializer})
     def get(self, request: Request) -> Response:
         return Response(risk_rules_payload())
+
+
+class PurgeExpiredPlansView(APIView):
+    """Daily cleanup for Vercel Cron (GET with "Authorization: Bearer <CRON_SECRET>")."""
+
+    @extend_schema(exclude=True)
+    def get(self, request: Request) -> Response:
+        secret = settings.CRON_SECRET
+        given = request.headers.get("Authorization", "")
+        if not secret or not hmac.compare_digest(given, f"Bearer {secret}"):
+            raise ApiError("FORBIDDEN", "Missing or invalid cron secret.", status_code=403)
+        return Response({"deleted": purge_expired_plans()})

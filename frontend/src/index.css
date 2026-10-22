@@ -30,24 +30,6 @@ body {
   .btn-secondary {
     @apply inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200;
   }
-
-  /* Desktop: 400 px left panel over the map. Under 900 px: bottom sheet over a full-screen map. */
-  .panel {
-    @apply inset-x-0 bottom-0 max-h-[55vh] rounded-t-2xl border-t;
-  }
-  /* Forecast slider: bottom dock beside the panel on desktop, above the sheet on phones. */
-  .slider-dock {
-    @apply inset-x-2;
-    bottom: calc(55vh + 8px);
-  }
-  @media (min-width: 900px) {
-    .slider-dock {
-      @apply bottom-4 left-[416px] right-4;
-    }
-    .panel {
-      @apply inset-y-0 left-0 right-auto max-h-none w-[400px] rounded-none border-r border-t-0;
-    }
-  }
 }
 
 :focus-visible {
@@ -59,12 +41,13 @@ body {
   @apply rounded-card px-3 py-2 shadow-md;
 }
 
+/* Loading: a thin top progress bar and a skeleton shimmer (transform-only animations). */
 @keyframes progress {
   0% {
     transform: translateX(-100%);
   }
   100% {
-    transform: translateX(100%);
+    transform: translateX(300%);
   }
 }
 
@@ -72,8 +55,34 @@ body {
   animation: progress 1.2s ease-in-out infinite;
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton {
+  @apply relative overflow-hidden bg-slate-200 dark:bg-slate-800;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .progress-bar,
+  .skeleton::after,
   .animate-pulse,
   .animate-spin {
     animation: none;

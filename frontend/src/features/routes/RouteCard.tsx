@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import type { Route } from '../../api/types';
+import { CountUp } from '../../animations/CountUp';
 import { formatDuration, formatLocalTime, formatMiles } from '../../lib/format';
 import { useUIStore } from '../../store/ui';
 import { LevelChip } from './LevelChip';
@@ -46,10 +47,14 @@ export function RouteCard({ route, recommended }: Props) {
           <span className="text-xs font-medium text-slate-500">Rank {route.rank}</span>
           {recommended && (
             <span
-              className="recommended-badge rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-white"
+              className="recommended-badge relative inline-block rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-white"
               data-testid="recommended-badge"
             >
-              ✓ Recommended
+              <span
+                className="badge-glow pointer-events-none absolute inset-0 rounded-full bg-accent opacity-0"
+                aria-hidden
+              />
+              <span className="relative">✓ Recommended</span>
             </span>
           )}
         </div>
@@ -59,13 +64,15 @@ export function RouteCard({ route, recommended }: Props) {
       <dl className="mt-3 grid grid-cols-3 gap-2 text-sm tabular-nums">
         <div>
           <dt className="text-xs text-slate-500">Distance</dt>
-          <dd className="font-semibold" data-count="distance">
-            {formatMiles(route.distance_mi)}
+          <dd className="font-semibold">
+            <CountUp value={route.distance_mi} format={(n) => formatMiles(n)} />
           </dd>
         </div>
         <div>
           <dt className="text-xs text-slate-500">Duration</dt>
-          <dd className="font-semibold">{formatDuration(route.travel_time_s)}</dd>
+          <dd className="font-semibold">
+            <CountUp value={route.travel_time_s} format={formatDuration} />
+          </dd>
         </div>
         <div>
           <dt className="text-xs text-slate-500">Arrives</dt>
@@ -79,7 +86,14 @@ export function RouteCard({ route, recommended }: Props) {
           <span>Severe {m.severe_miles.toFixed(1)} mi</span>
           <span>High {m.high_miles.toFixed(1)} mi</span>
           {m.no_travel_miles > 0 && <span>No Travel {m.no_travel_miles.toFixed(1)} mi</span>}
-          <span>Avg risk {m.avg_risk === null ? 'n/a' : m.avg_risk.toFixed(2)}</span>
+          <span>
+            Avg risk{' '}
+            {m.avg_risk === null ? (
+              'n/a'
+            ) : (
+              <CountUp value={m.avg_risk} format={(n) => n.toFixed(2)} />
+            )}
+          </span>
         </div>
       </div>
 

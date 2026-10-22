@@ -4,7 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Heatmap, Plan } from '../../api/types';
 import { boundsOf, type Bounds, type LonLat } from '../../lib/geo';
+import { mapBottomInset } from '../../lib/layoutMetrics';
 import { decodePolyline } from '../../lib/polyline';
+import { routeDrawIn } from '../../animations/timelines';
+import { prefersReducedMotion } from '../../animations/useReducedMotion';
 import { useUIStore } from '../../store/ui';
 import { CheckpointPopup } from '../checkpoint/CheckpointPopup';
 import { findCheckpoint } from '../checkpoint/CheckpointDrawer';
@@ -31,7 +34,12 @@ const FIT_DURATION_MS = 900;
 
 function cameraPadding() {
   if (window.innerWidth >= DESKTOP_MIN_WIDTH) return { top: 60, bottom: 110, left: 420, right: 60 };
-  return { top: 50, bottom: Math.round(window.innerHeight * 0.55) + 24, left: 30, right: 30 };
+  return {
+    top: 50,
+    bottom: (mapBottomInset() || Math.round(window.innerHeight * 0.5)) + 16,
+    left: 30,
+    right: 30,
+  };
 }
 
 function fit(map: MapLibreMap, bounds: Bounds | null) {
@@ -71,13 +79,17 @@ export default function MapView({ plan, heatmap, bus, startMs }: MapViewProps) {
   // Sources + layers: added once per plan, removed on plan change. Never re-created on hover.
   useEffect(() => {
     if (!map || !plan) return;
-    addRouteLayers(map, plan.routes, lines, undefined);
-    addCheckpointLayers(map, plan.routes);
+    const reduce = prefersReducedMotion();
+    // Created hidden (progress 0, opacity 0) and revealed by the draw-in timeline.
+    addRouteLayers(map, plan.routes, lines, undefined, reduce ? 1 : 0);
+    addCheckpointLayers(map, plan.routes, reduce ? 1 : 0);
     const { selectedRoute, hoveredRoute } = useUIStore.getState();
     paintRouteEmphasis(map, labels, selectedRoute, hoveredRoute, CHECKPOINT_LAYER);
-    paintCheckpointEmphasis(map, selectedRoute);
+    if (reduce) paintCheckpointEmphasis(map, selectedRoute);
     fit(map, boundsOf([...lines.values()]));
+    const drawIn = routeDrawIn(map, plan.routes, reduce);
     return () => {
+      drawIn.kill();
       popupRef.current?.remove();
       removeCheckpointLayers(map);
       removeRouteLayers(map, labels);

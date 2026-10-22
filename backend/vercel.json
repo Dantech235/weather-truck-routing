@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "config/wsgi.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{**/tests/**,**/test_*.py,**/conftest.py,.venv/**,.mypy_cache/**,.ruff_cache/**,.pytest_cache/**,.hypothesis/**,htmlcov/**}"
+    }
+  },
+  "crons": [{ "path": "/api/v1/internal/purge-expired-plans/", "schedule": "17 3 * * *" }]
+}

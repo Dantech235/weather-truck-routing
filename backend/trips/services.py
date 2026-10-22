@@ -476,3 +476,12 @@ def get_or_build_heatmap(plan: TripPlan, weather: WeatherProvider | None = None)
     plan.heatmap = payload
     plan.save(update_fields=["heatmap"])
     return payload
+
+
+def purge_expired_plans() -> int:
+    """Delete plans past `expires_at`. Returns the number of plans deleted."""
+    from django.utils import timezone
+
+    deleted, _ = TripPlan.objects.filter(expires_at__lte=timezone.now()).delete()
+    logger.info("purge_expired_plans deleted=%d", deleted)
+    return int(deleted)

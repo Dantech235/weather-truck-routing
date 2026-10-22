@@ -38,6 +38,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -103,6 +104,9 @@ TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY", "")
 ORS_API_KEY = os.environ.get("ORS_API_KEY", "")
 OPEN_METEO_BASE_URL = os.environ.get("OPEN_METEO_BASE_URL", "https://api.open-meteo.com")
 PROVIDERS_MODE = os.environ.get("PROVIDERS_MODE", "live")
+
+# Shared secret for scheduled jobs (Vercel Cron sends "Authorization: Bearer <CRON_SECRET>").
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
 
 LOGGING = {
     "version": 1,
